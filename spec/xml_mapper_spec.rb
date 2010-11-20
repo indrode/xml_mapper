@@ -149,6 +149,7 @@ describe "XmlMapper" do
   
   describe "defining a DSL" do
     before(:each) do
+      # so that we have a new class in each spec
       class_name = "TestMapping#{Time.now.to_f.to_s.gsub(".", "")}"
       str = %(
         class #{class_name} < XmlMapper
