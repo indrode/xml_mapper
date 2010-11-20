@@ -1,7 +1,7 @@
 require "nokogiri"
 
 class XmlMapper
-  attr_accessor :mappings
+  attr_accessor :mappings, :after_map_block
   
   class << self
     def text(*args)
@@ -10,6 +10,10 @@ class XmlMapper
     
     def integer(*args)
       mapper.add_mapping(:integer, *args)
+    end
+    
+    def after_map(&block)
+      mapper.after_map(&block)
     end
     
     def many(*args, &block)
@@ -69,6 +73,10 @@ class XmlMapper
     end
   end
   
+  def after_map(&block)
+    self.after_map_block = block
+  end
+  
   def add_single_mapping(type, xpath, key, options = {})
     self.mappings << { :type => type, :xpath => xpath, :key => key, :options => options }
   end
@@ -82,7 +90,7 @@ class XmlMapper
       xml_or_doc.map { |doc| attributes_from_xml(doc) } 
     else
       doc = xml_or_doc.is_a?(Nokogiri::XML::Node) ? xml_or_doc : Nokogiri::XML(xml_or_doc)
-      self.mappings.inject({}) do |hash, mapping|
+      atts = self.mappings.inject({}) do |hash, mapping|
         value = nil
         if mapping[:type] == :many
           value = mapping[:options][:mapper].attributes_from_xml(doc.search(mapping[:xpath]).to_a)
@@ -97,6 +105,8 @@ class XmlMapper
         end
         hash.merge(mapping[:key] => value)
       end
+      atts.instance_eval(&self.after_map_block) if self.after_map_block
+      atts
     end
   end
   

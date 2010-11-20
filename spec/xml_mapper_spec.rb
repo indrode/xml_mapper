@@ -170,6 +170,28 @@ describe "XmlMapper" do
     end
   end
   
+  describe "#after_map" do
+    before(:each) do
+      @mapper.after_map do
+        self[:upc] = "1234"
+      end
+    end
+    
+    it "assigns after_map block" do
+      @mapper.after_map_block.should_not be_nil
+    end
+    
+    it "assigns a block to after_map_block" do
+      @mapper.after_map_block.should be_an_instance_of(Proc)
+    end
+    
+    it "should executes after_map block after mapping" do
+      @mapper.attributes_from_xml("<album><title>Some Titel</title></album>").should == {
+        :upc => "1234"
+      }
+    end
+  end
+  
   describe "defining a DSL" do
     before(:each) do
       # so that we have a new class in each spec
@@ -198,6 +220,16 @@ describe "XmlMapper" do
       @clazz.attributes_from_xml_path("/some/path.xml").should == {
         :title => "Test Title",
         :xml_path => "/some/path.xml"
+      }
+    end
+    
+    it "allos defining a after_map block" do
+      @clazz.after_map do
+        self[:upc] = "1234"
+      end
+      @clazz.text(:title)
+      @clazz.attributes_from_xml(%(<album><title>Test Title</title></album>)).should == {
+        :upc => "1234", :title => "Test Title"
       }
     end
     
@@ -256,5 +288,6 @@ describe "XmlMapper" do
         }
       end
     end
+  
   end
 end
