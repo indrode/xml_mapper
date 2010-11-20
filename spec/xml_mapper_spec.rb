@@ -147,6 +147,29 @@ describe "XmlMapper" do
     end
   end
   
+  describe "#attributes_from_xml_path" do
+    before(:each) do
+      @mapper.add_mapping(:text, :title)
+      @xml = %(
+        <album>
+          <title>Black on Both Sides</title>
+        </album>
+      )
+      File.stub(:read).and_return @xml
+    end
+    
+    it "sets the xml_path" do
+      @mapper.attributes_from_xml_path("/some/path.xml").should == { 
+        :title => "Black on Both Sides", :xml_path => "/some/path.xml" 
+      }
+    end
+    
+    it "calls File.read with correct parameters" do
+      File.should_receive(:read).with("/some/path.xml").and_return @xml
+      @mapper.attributes_from_xml_path("/some/path.xml")
+    end
+  end
+  
   describe "defining a DSL" do
     before(:each) do
       # so that we have a new class in each spec
@@ -167,6 +190,15 @@ describe "XmlMapper" do
     it "sets the correct mapping for text keyword" do
       @clazz.integer(:title)
       @clazz.mapper.mappings.should == [{ :type => :integer, :key => :title, :xpath => :title, :options => {} }]
+    end
+    
+    it "allows getting attributes form xml_path" do
+      File.stub(:read).and_return %(<album><title>Test Title</title></album>)
+      @clazz.text(:title)
+      @clazz.attributes_from_xml_path("/some/path.xml").should == {
+        :title => "Test Title",
+        :xml_path => "/some/path.xml"
+      }
     end
     
     describe "defining a submapper" do

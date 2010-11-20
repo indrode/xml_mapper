@@ -22,6 +22,10 @@ class XmlMapper
       mapper.attributes_from_xml(xml)
     end
     
+    def attributes_from_xml_path(path)
+      mapper.attributes_from_xml_path(path)
+    end
+    
     def capture_submapping(&block)
       saved_mapper = self.mapper
       self.mapper = XmlMapper.new
@@ -67,6 +71,10 @@ class XmlMapper
   
   def add_single_mapping(type, xpath, key, options = {})
     self.mappings << { :type => type, :xpath => xpath, :key => key, :options => options }
+  end
+  
+  def attributes_from_xml_path(path)
+    attributes_from_xml(File.read(path)).merge(:xml_path => path)
   end
   
   def attributes_from_xml(xml_or_doc)
