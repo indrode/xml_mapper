@@ -10,3 +10,8 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 RSpec.configure do |config|
   
 end
+
+if defined?(Debugger) && Debugger.respond_to?(:settings)
+  Debugger.settings[:autolist] = 1
+  Debugger.settings[:autoeval] = true
+end

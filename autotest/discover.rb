@@ -1,1 +1,1 @@
-Autotest.add_discovery { "testunit" }
+Autotest.add_discovery { "rspec2" }
