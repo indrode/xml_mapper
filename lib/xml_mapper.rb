@@ -1,7 +1,7 @@
 require "nokogiri"
 
 class XmlMapper
-  attr_accessor :mappings, :after_map_block
+  attr_accessor :mappings, :after_map_block, :within_xpath
   
   class << self
     attr_accessor :mapper
@@ -20,6 +20,13 @@ class XmlMapper
     
     def exists(*args)
       mapper.add_mapping(:exists, *args)
+    end
+    
+    def within(xpath, &block)
+      self.mapper.within_xpath ||= []
+      self.mapper.within_xpath << xpath
+      self.instance_eval(&block)
+      self.mapper.within_xpath.pop
     end
     
     def after_map(&block)
@@ -84,7 +91,11 @@ class XmlMapper
   end
   
   def add_single_mapping(type, xpath, key, options = {})
-    self.mappings << { :type => type, :xpath => xpath, :key => key, :options => options }
+    self.mappings << { :type => type, :xpath => add_with_to_xpath(xpath), :key => key, :options => options }
+  end
+  
+  def add_with_to_xpath(xpath)
+    [self.within_xpath, xpath].flatten.compact.join("/")
   end
   
   def attributes_from_xml_path(path)

@@ -8,32 +8,32 @@ describe "XmlMapper" do
   describe "#add_mapping" do
     it "adds the correct mappings when only one symbol given" do
       @mapper.add_mapping(:text, :title)
-      @mapper.mappings.should == [{ :type => :text, :xpath => :title, :key => :title, :options => {} }]
+      @mapper.mappings.should == [{ :type => :text, :xpath => "title", :key => :title, :options => {} }]
     end
     
     it "adds the correct mapping when type is not text" do
       @mapper.add_mapping(:length, :title)
-      @mapper.mappings.should == [{ :type => :length, :xpath => :title, :key => :title, :options => {} }]
+      @mapper.mappings.should == [{ :type => :length, :xpath => "title", :key => :title, :options => {} }]
     end
     
     it "adds multiple mappings when more symbols given" do
       @mapper.add_mapping(:text, :first_name, :last_name)
       @mapper.mappings.should == [
-        { :type => :text, :xpath => :first_name, :key => :first_name, :options => {} },
-        { :type => :text, :xpath => :last_name, :key => :last_name, :options => {} },
+        { :type => :text, :xpath => "first_name", :key => :first_name, :options => {} },
+        { :type => :text, :xpath => "last_name", :key => :last_name, :options => {} },
       ]
     end
     
     it "adds mappings when mapping given as hash" do
       @mapper.add_mapping(:text, :name => :first_name)
-      @mapper.mappings.should == [{ :type => :text, :xpath => :name, :key => :first_name, :options => {} }]
+      @mapper.mappings.should == [{ :type => :text, :xpath => "name", :key => :first_name, :options => {} }]
     end
     
     it "adds mappings with options when mapping given as symbols and last arg is hash" do
       @mapper.add_mapping(:text, :name, :born, :after_map => :to_s)
       @mapper.mappings.should == [
-        { :type => :text, :xpath => :name, :key => :name, :options => { :after_map => :to_s } },
-        { :type => :text, :xpath => :born, :key => :born, :options => { :after_map => :to_s } },
+        { :type => :text, :xpath => "name", :key => :name, :options => { :after_map => :to_s } },
+        { :type => :text, :xpath => "born", :key => :born, :options => { :after_map => :to_s } },
       ]
     end
   end
@@ -233,12 +233,12 @@ describe "XmlMapper" do
     
     it "sets the correct mapping for map keyword" do
       @clazz.text(:title)
-      @clazz.mapper.mappings.should == [{ :type => :text, :key => :title, :xpath => :title, :options => {} }]
+      @clazz.mapper.mappings.should == [{ :type => :text, :key => :title, :xpath => "title", :options => {} }]
     end
     
     it "sets the correct mapping for text keyword" do
       @clazz.integer(:title)
-      @clazz.mapper.mappings.should == [{ :type => :integer, :key => :title, :xpath => :title, :options => {} }]
+      @clazz.mapper.mappings.should == [{ :type => :integer, :key => :title, :xpath => "title", :options => {} }]
     end
     
     it "allows getting attributes form xml_path" do
@@ -272,6 +272,45 @@ describe "XmlMapper" do
       @clazz.attributes_from_xml(xml).should == { :allows_streaming => true }
     end
     
+    describe "#within" do
+      it "adds the within xpath to all xpath mappings" do
+        @clazz.within("artist") do
+          text :name => :artist_name
+          integer :id => :artist_id
+        end
+        @clazz.mapper.mappings.should == [
+          { :type => :text, :xpath => "artist/name", :key => :artist_name, :options => {} },
+          { :type => :integer, :xpath => "artist/id", :key => :artist_id, :options => {} },
+        ]
+      end
+      
+      it "adds all nested within xpaths to xpath mappings" do
+        @clazz.within("contributions") do
+          within "artist" do
+            text :name => :artist_name 
+            integer :id => :artist_id
+          end
+        end
+        @clazz.mapper.mappings.should == [
+          { :type => :text, :xpath => "contributions/artist/name", :key => :artist_name, :options => {} },
+          { :type => :integer, :xpath => "contributions/artist/id", :key => :artist_id, :options => {} },
+        ]
+      end
+      
+      it "allows multiple within blocks on same level" do
+        @clazz.within "artist" do
+          text :name => :artist_name 
+        end
+        @clazz.within "file" do
+          text :file_name
+        end
+        @clazz.mapper.mappings.should == [
+          { :type => :text, :xpath => "artist/name", :key => :artist_name, :options => {} },
+          { :type => :text, :xpath => "file/file_name", :key => :file_name, :options => {} },
+        ]
+      end
+    end
+    
     describe "defining a submapper" do
       before(:each) do
         @clazz.many("tracks/track" => :tracks) do
@@ -294,8 +333,8 @@ describe "XmlMapper" do
       
       it "sets the correct submapper" do
         @clazz.mapper.mappings.first[:options][:mapper].mappings.should == [
-          { :type => :text, :key => :title, :xpath => :title, :options => {} },
-          { :type => :integer, :key => :track_number, :xpath => :track_number, :options => {} },
+          { :type => :text, :key => :title, :xpath => "title", :options => {} },
+          { :type => :integer, :key => :track_number, :xpath => "track_number", :options => {} },
         ]
       end
       
