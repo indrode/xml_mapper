@@ -53,6 +53,20 @@ describe "XmlMapper" do
       @mapper.attributes_from_xml(@xml).should == { :title => "Black on Both Sides", :artist_name => "Mos Def" }
     end
     
+    describe "#exists" do
+      it "returns true when node exists" do
+        xml = %(<album><title>Black on Both Sides</title><rights><country>DE</country></rights></album>)
+        @mapper.add_mapping(:exists, "rights[country='DE']" => :allows_streaming)
+        @mapper.attributes_from_xml(xml).should == { :allows_streaming => true }
+      end
+      
+      it "returns false when node does not exist" do
+        xml = %(<album><title>Black on Both Sides</title><rights><country>DE</country></rights></album>)
+        @mapper.add_mapping(:exists, "rights[country='FR']" => :allows_streaming)
+        @mapper.attributes_from_xml(xml).should == { :allows_streaming => false }
+      end
+    end
+    
     it "maps not found nodes to nil" do
       @mapper.add_mapping(:text, :artist_name, :version_title, :long_title)
       @mapper.attributes_from_xml(@xml).should == { 
@@ -96,7 +110,7 @@ describe "XmlMapper" do
       }
     end
     
-    it "also taks a nokogiri node as argument" do
+    it "takes a nokogiri node as argument" do
       @mapper.add_mapping(:text, :artist_name)
       @mapper.attributes_from_xml(Nokogiri::XML(@xml)).should == {
         :artist_name => "Mos Def"
@@ -249,6 +263,12 @@ describe "XmlMapper" do
     it "accepts boolean as keyword" do
       @clazz.boolean(:allows_streaming)
       xml = %(<album><title>Test Title</title><allows_streaming>true</allows_streaming></album>)
+      @clazz.attributes_from_xml(xml).should == { :allows_streaming => true }
+    end
+    
+    it "accepts exists as keyword" do
+      @clazz.exists("rights[country='DE']" => :allows_streaming)
+      xml = %(<album><title>Black on Both Sides</title><rights><country>DE</country></rights></album>)
       @clazz.attributes_from_xml(xml).should == { :allows_streaming => true }
     end
     

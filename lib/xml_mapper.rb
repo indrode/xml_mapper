@@ -18,6 +18,10 @@ class XmlMapper
       mapper.add_mapping(:boolean, *args)
     end
     
+    def exists(*args)
+      mapper.add_mapping(:exists, *args)
+    end
+    
     def after_map(&block)
       mapper.after_map(&block)
     end
@@ -108,6 +112,8 @@ class XmlMapper
   def value_from_doc_and_mapping(doc, mapping)
     if mapping[:type] == :many
       mapping[:options][:mapper].attributes_from_xml(doc.search(mapping[:xpath]).to_a)
+    elsif mapping[:type] == :exists
+      !doc.at("//#{mapping[:xpath]}").nil?
     else
       apply_after_map_to_value(inner_text_for_xpath(doc, mapping[:xpath]), mapping)
     end
