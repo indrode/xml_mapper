@@ -192,6 +192,19 @@ describe "XmlMapper" do
     end
   end
   
+  describe "converting strings" do
+    describe "#string_to_boolean" do
+      { 
+        "true" => true, "false" => false, "y" => true, "TRUE" => true, "" => nil, "YES" => true, "yes" => true,
+        "n" => false
+      }.each do |value, result|
+        it "converts #{value.inspect} to #{result}" do
+          @mapper.string_to_boolean(value).should == result
+        end
+      end
+    end
+  end
+  
   describe "defining a DSL" do
     before(:each) do
       # so that we have a new class in each spec
@@ -223,7 +236,7 @@ describe "XmlMapper" do
       }
     end
     
-    it "allos defining a after_map block" do
+    it "allows defining a after_map block" do
       @clazz.after_map do
         self[:upc] = "1234"
       end
@@ -231,6 +244,12 @@ describe "XmlMapper" do
       @clazz.attributes_from_xml(%(<album><title>Test Title</title></album>)).should == {
         :upc => "1234", :title => "Test Title"
       }
+    end
+    
+    it "accepts boolean as keyword" do
+      @clazz.boolean(:allows_streaming)
+      xml = %(<album><title>Test Title</title><allows_streaming>true</allows_streaming></album>)
+      @clazz.attributes_from_xml(xml).should == { :allows_streaming => true }
     end
     
     describe "defining a submapper" do

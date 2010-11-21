@@ -4,12 +4,18 @@ class XmlMapper
   attr_accessor :mappings, :after_map_block
   
   class << self
+    attr_accessor :mapper
+    
     def text(*args)
       mapper.add_mapping(:text, *args)
     end
     
     def integer(*args)
       mapper.add_mapping(:integer, *args)
+    end
+    
+    def boolean(*args)
+      mapper.add_mapping(:boolean, *args)
     end
     
     def after_map(&block)
@@ -50,10 +56,6 @@ class XmlMapper
     def mapper
       @mapper ||= XmlMapper.new
     end
-    
-    def mapper=(new_mapper)
-      @mapper = new_mapper
-    end
   end
   
   def initialize
@@ -85,34 +87,57 @@ class XmlMapper
     attributes_from_xml(File.read(path)).merge(:xml_path => path)
   end
   
+  TYPE_TO_AFTER_CODE = {
+    :integer => :to_i,
+    :boolean => :string_to_boolean
+  }
+  
   def attributes_from_xml(xml_or_doc)
     if xml_or_doc.is_a?(Array)
       xml_or_doc.map { |doc| attributes_from_xml(doc) } 
     else
       doc = xml_or_doc.is_a?(Nokogiri::XML::Node) ? xml_or_doc : Nokogiri::XML(xml_or_doc)
       atts = self.mappings.inject({}) do |hash, mapping|
-        value = nil
-        if mapping[:type] == :many
-          value = mapping[:options][:mapper].attributes_from_xml(doc.search(mapping[:xpath]).to_a)
-        else
-          value = inner_text_for_xpath(doc, mapping[:xpath])
-          after_map = mapping[:type] == :integer ? :to_i : nil
-          after_map ||= mapping[:options][:after_map]
-          if value && after_map
-            value = value.send(after_map)  if value.respond_to?(after_map)
-            value = self.send(after_map, value) if self.respond_to?(after_map)
-          end
-        end
-        hash.merge(mapping[:key] => value)
+        hash.merge(mapping[:key] => value_from_doc_and_mapping(doc, mapping))
       end
       atts.instance_eval(&self.after_map_block) if self.after_map_block
       atts
     end
   end
   
+  def value_from_doc_and_mapping(doc, mapping)
+    if mapping[:type] == :many
+      mapping[:options][:mapper].attributes_from_xml(doc.search(mapping[:xpath]).to_a)
+    else
+      apply_after_map_to_value(inner_text_for_xpath(doc, mapping[:xpath]), mapping)
+    end
+  end
+  
+  def apply_after_map_to_value(value, mapping)
+    after_map = TYPE_TO_AFTER_CODE[mapping[:type]]
+    after_map ||= mapping[:options][:after_map]
+    if value && after_map
+      value = value.send(after_map)  if value.respond_to?(after_map)
+      value = self.send(after_map, value) if self.respond_to?(after_map)
+    end
+    value
+  end
+  
   def inner_text_for_xpath(doc, xpath)
     if node = doc.at(xpath)
       node.inner_text
     end
+  end
+  
+  MAPPINGS = {
+    "true" => true,
+    "false" => false,
+    "yes" => true,
+    "y" => true,
+    "n" => false
+  }
+  
+  def string_to_boolean(value)
+    MAPPINGS[value.to_s.downcase]
   end
 end
