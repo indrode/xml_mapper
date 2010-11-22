@@ -40,11 +40,15 @@ class XmlMapper
     end
     
     def attributes_from_xml(xml)
-      mapper.attributes_from_xml(xml)
+      attributes_from_superclass(xml, :attributes_from_xml).merge(mapper.attributes_from_xml(xml))
+    end
+    
+    def attributes_from_superclass(xml, method = :attributes_from_xml)
+      self.superclass && self.superclass.respond_to?(:mapper) ? self.superclass.mapper.send(method, xml) : {}
     end
     
     def attributes_from_xml_path(path)
-      mapper.attributes_from_xml_path(path)
+      attributes_from_superclass(path, :attributes_from_xml_path).merge(mapper.attributes_from_xml_path(path))
     end
     
     def capture_submapping(&block)

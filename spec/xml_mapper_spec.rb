@@ -220,15 +220,19 @@ describe "XmlMapper" do
   end
   
   describe "defining a DSL" do
-    before(:each) do
-      # so that we have a new class in each spec
+    def create_class(base_class = "XmlMapper")
       class_name = "TestMapping#{Time.now.to_f.to_s.gsub(".", "")}"
       str = %(
-        class #{class_name} < XmlMapper
+        class #{class_name} < #{base_class}
         end
       )
       eval(str)
-      @clazz = eval(class_name)
+      eval(class_name)
+    end
+    
+    before(:each) do
+      # so that we have a new class in each spec
+      @clazz = create_class
     end
     
     it "sets the correct mapping for map keyword" do
@@ -310,6 +314,60 @@ describe "XmlMapper" do
         ]
       end
     end
+    
+    describe "with mapper hierarchy" do
+      it "attributes_from_xml includes superclass mapper as well" do
+        @clazz.text(:artist_name)
+        subclazz = create_class(@clazz.name)
+        subclazz.text(:title)
+        xml = %(
+          <album>
+            <artist_name>Mos Def</artist_name>
+            <title>Black on Both Sides</title>
+          </album>
+        )
+        subclazz.attributes_from_xml(xml).should == {
+          :artist_name => "Mos Def",
+          :title => "Black on Both Sides"
+        }
+      end
+      
+      it "overwrites superclass mapper" do
+        @clazz.text(:artist_name)
+        subclazz = create_class(@clazz.name)
+        subclazz.text(:title)
+        subclazz.text(:artist_name, :after_map => :upcase)
+        xml = %(
+          <album>
+            <artist_name>Mos Def</artist_name>
+            <title>Black on Both Sides</title>
+          </album>
+        )
+        subclazz.attributes_from_xml(xml).should == {
+          :artist_name => "MOS DEF",
+          :title => "Black on Both Sides"
+        }
+      end
+
+      it "attributes_from_xml_path includes superclass mapper as well" do
+        @clazz.text(:artist_name)
+        subclazz = create_class(@clazz.name)
+        subclazz.text(:title)
+        xml = %(
+          <album>
+            <artist_name>Mos Def</artist_name>
+            <title>Black on Both Sides</title>
+          </album>
+        )
+        File.stub!(:read).and_return xml
+        subclazz.attributes_from_xml_path("/some_path/album.xml").should == {
+          :artist_name => "Mos Def",
+          :title => "Black on Both Sides",
+          :xml_path => "/some_path/album.xml"
+        }
+      end
+    end
+    
     
     describe "defining a submapper" do
       before(:each) do
