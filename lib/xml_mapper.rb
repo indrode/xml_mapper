@@ -69,7 +69,7 @@ class XmlMapper
     end
     
     def mapper
-      @mapper ||= XmlMapper.new
+      @mapper ||= self.new
     end
   end
   

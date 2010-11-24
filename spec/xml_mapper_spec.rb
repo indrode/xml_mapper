@@ -97,7 +97,7 @@ describe "XmlMapper" do
       }
     end
     
-    it "uses mapper method defined in xml_mapper when after_map does not respond to :upcase" do
+    it "uses mapper method defined in xml_mapper when value does not respond to :after_map" do
       class << @mapper
         def double(value)
           value.to_s * 2
@@ -107,6 +107,19 @@ describe "XmlMapper" do
       @mapper.add_mapping(:text, :artist_name, :after_map => :double)
       @mapper.attributes_from_xml(@xml).should == {
         :artist_name => "Mos DefMos Def"
+      }
+    end
+    
+    it "uses mapper method defined in xml_mapper when value does not respond to :after_map and given as hash" do
+      class << @mapper
+        def double(value)
+          value.to_s * 2
+        end
+      end
+      # [{:type=>:text, :xpath=>"Graphic/ImgFormat", :key=>:image_format, :options=>{:after_map=>:double}}]
+      @mapper.add_mapping(:text, { :artist_name => :name }, {:after_map => :double})
+      @mapper.attributes_from_xml(@xml).should == {
+        :name => "Mos DefMos Def"
       }
     end
     
@@ -235,6 +248,10 @@ describe "XmlMapper" do
       @clazz = create_class
     end
     
+    it "initializes a mapper of the same class" do
+      @clazz.mapper.class.name.should == @clazz.name
+    end
+    
     it "sets the correct mapping for map keyword" do
       @clazz.text(:title)
       @clazz.mapper.mappings.should == [{ :type => :text, :key => :title, :xpath => "title", :options => {} }]
@@ -261,6 +278,19 @@ describe "XmlMapper" do
       @clazz.text(:title)
       @clazz.attributes_from_xml(%(<album><title>Test Title</title></album>)).should == {
         :upc => "1234", :title => "Test Title"
+      }
+    end
+    
+    it "allows using of instance methods of mapper for after_map" do
+      @clazz.class_eval do
+        def custom_mapper(txt)
+          txt * 2
+        end
+      end
+      
+      @clazz.text(:title, :after_map => :custom_mapper)
+      @clazz.attributes_from_xml(%(<album><title>Test</title></album>)).should == {
+        :title => "TestTest"
       }
     end
     
