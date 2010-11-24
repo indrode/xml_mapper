@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{xml_mapper}
-  s.version = "0.1.0"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tobias Schwab"]
-  s.date = %q{2010-11-22}
-  s.description = %q{TODO: longer description of your gem}
+  s.date = %q{2010-11-24}
+  s.description = %q{Just check out the examples}
   s.email = %q{tobias.schwab@dynport.de}
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -32,13 +32,14 @@ Gem::Specification.new do |s|
     "features/xml_mapper.feature",
     "lib/xml_mapper.rb",
     "spec/spec_helper.rb",
-    "spec/xml_mapper_spec.rb"
+    "spec/xml_mapper_spec.rb",
+    "xml_mapper.gemspec"
   ]
   s.homepage = %q{http://github.com/tobstarr/xml_mapper}
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
-  s.summary = %q{TODO: one-line summary of your gem}
+  s.summary = %q{Declarative and clever XML to Ruby Mapping}
   s.test_files = [
     "spec/spec_helper.rb",
     "spec/xml_mapper_spec.rb"
