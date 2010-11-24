@@ -15,8 +15,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "xml_mapper"
   gem.homepage = "http://github.com/tobstarr/xml_mapper"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Declarative and clever XML to Ruby Mapping}
+  gem.description = %Q{Just check out the examples}
   gem.email = "tobias.schwab@dynport.de"
   gem.authors = ["Tobias Schwab"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
