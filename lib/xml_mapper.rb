@@ -22,6 +22,10 @@ class XmlMapper
       mapper.add_mapping(:exists, *args)
     end
     
+    def node(*args)
+      mapper.add_mapping(:node, *args)
+    end
+    
     def within(xpath, &block)
       self.mapper.within_xpath ||= []
       self.mapper.within_xpath << xpath

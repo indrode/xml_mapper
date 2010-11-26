@@ -280,9 +280,14 @@ describe "XmlMapper" do
       @clazz.mapper.class.name.should == @clazz.name
     end
     
-    it "sets the correct mapping for map keyword" do
+    it "sets the correct mapping for text keyword" do
       @clazz.text(:title)
       @clazz.mapper.mappings.should == [{ :type => :text, :key => :title, :xpath => "title", :options => {} }]
+    end
+    
+    it "sets the correct mapping for node keyword" do
+      @clazz.node(:title)
+      @clazz.mapper.mappings.should == [{ :type => :node, :key => :title, :xpath => "title", :options => {} }]
     end
     
     it "sets the correct mapping for text keyword" do
@@ -425,7 +430,6 @@ describe "XmlMapper" do
         }
       end
     end
-    
     
     describe "defining a submapper" do
       before(:each) do
