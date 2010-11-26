@@ -223,6 +223,20 @@ describe "XmlMapper" do
       File.should_receive(:read).with("/some/path.xml").and_return @xml
       @mapper.attributes_from_xml_path("/some/path.xml")
     end
+    
+    it "allows using the xml_path in after_map block" do
+      @mapper.after_map do
+        self[:new_xml_path] = self[:xml_path]
+      end
+      @mapper.attributes_from_xml_path("/some/path.xml")[:new_xml_path].should == "/some/path.xml"
+    end
+    
+    it "allows deleting the xml_path in after_map block" do
+      @mapper.after_map do
+        self.delete(:xml_path)
+      end
+      @mapper.attributes_from_xml_path("/some/path.xml").should_not have_key(:xml_path)
+    end
   end
   
   describe "#after_map" do

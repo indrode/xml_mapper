@@ -107,7 +107,7 @@ class XmlMapper
   end
   
   def attributes_from_xml_path(path)
-    attributes_from_xml(File.read(path)).merge(:xml_path => path)
+    attributes_from_xml(File.read(path), path)
   end
   
   TYPE_TO_AFTER_CODE = {
@@ -115,12 +115,12 @@ class XmlMapper
     :boolean => :string_to_boolean
   }
   
-  def attributes_from_xml(xml_or_doc)
+  def attributes_from_xml(xml_or_doc, xml_path = nil)
     if xml_or_doc.is_a?(Array)
       xml_or_doc.map { |doc| attributes_from_xml(doc) } 
     else
       doc = xml_or_doc.is_a?(Nokogiri::XML::Node) ? xml_or_doc : Nokogiri::XML(xml_or_doc)
-      atts = self.mappings.inject({}) do |hash, mapping|
+      atts = self.mappings.inject(xml_path.nil? ? {} : { :xml_path => xml_path }) do |hash, mapping|
         hash.merge(mapping[:key] => value_from_doc_and_mapping(doc, mapping))
       end
       atts.instance_eval(&self.after_map_block) if self.after_map_block
