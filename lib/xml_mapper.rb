@@ -48,7 +48,13 @@ class XmlMapper
     end
     
     def attributes_from_superclass(xml, method = :attributes_from_xml)
-      self.superclass && self.superclass.respond_to?(:mapper) ? self.superclass.mapper.send(method, xml) : {}
+      if self.superclass && self.superclass.respond_to?(:mapper)
+        attributes = self.superclass.mapper.send(method, xml)
+        attributes.delete(:xml_path)
+        attributes
+      else
+        {}
+      end
     end
     
     def attributes_from_xml_path(path)

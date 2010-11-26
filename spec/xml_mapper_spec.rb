@@ -328,6 +328,14 @@ describe "XmlMapper" do
       }
     end
     
+    it "allows deleteing the xml path in after_block" do
+      @clazz.after_map do
+        self.delete(:xml_path)
+      end
+      File.stub(:read).and_return %(<album><title>Test Title</title></album>)
+      @clazz.attributes_from_xml_path("/some/path.xml").should_not have_key(:xml_path)
+    end
+    
     it "allows using of instance methods of mapper for after_map" do
       @clazz.class_eval do
         def custom_mapper(txt)
