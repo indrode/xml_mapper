@@ -336,6 +336,8 @@ describe "XmlMapper" do
       @clazz.attributes_from_xml_path("/some/path.xml").should_not have_key(:xml_path)
     end
     
+    it "allows using attributes from superclass in after_map block"
+    
     it "allows using of instance methods of mapper for after_map" do
       @clazz.class_eval do
         def custom_mapper(txt)
