@@ -130,7 +130,8 @@ class XmlMapper
     elsif mapping[:type] == :exists
       !doc.at("//#{mapping[:xpath]}").nil?
     else
-      apply_after_map_to_value(inner_text_for_xpath(doc, mapping[:xpath]), mapping)
+      value = mapping[:type] == :node ? doc.at(mapping[:xpath]) : inner_text_for_xpath(doc, mapping[:xpath])
+      apply_after_map_to_value(value, mapping)
     end
   end
   

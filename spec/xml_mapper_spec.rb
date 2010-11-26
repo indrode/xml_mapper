@@ -16,6 +16,11 @@ describe "XmlMapper" do
       @mapper.mappings.should == [{ :type => :length, :xpath => "title", :key => :title, :options => {} }]
     end
     
+    it "adds the correct mapping when type is node" do
+      @mapper.add_mapping(:node, :title)
+      @mapper.mappings.should == [{ :type => :node, :xpath => "title", :key => :title, :options => {} }]
+    end
+    
     it "adds multiple mappings when more symbols given" do
       @mapper.add_mapping(:text, :first_name, :last_name)
       @mapper.mappings.should == [
@@ -38,7 +43,7 @@ describe "XmlMapper" do
     end
   end
   
-  describe "map text attributes" do
+  describe "map attributes" do
     before(:each) do
       @xml = %(
       <album>
@@ -64,6 +69,29 @@ describe "XmlMapper" do
         xml = %(<album><title>Black on Both Sides</title><rights><country>DE</country></rights></album>)
         @mapper.add_mapping(:exists, "rights[country='FR']" => :allows_streaming)
         @mapper.attributes_from_xml(xml).should == { :allows_streaming => false }
+      end
+    end
+    
+    describe "#node" do
+      it "returns a nokogiri node" do
+        @mapper.add_mapping(:node, :title)
+        @mapper.attributes_from_xml(@xml)[:title].should be_an_instance_of(Nokogiri::XML::Element)
+      end
+      
+      it "returns nil when node not found" do
+        @mapper.add_mapping(:node, :rgne)
+        @mapper.attributes_from_xml(@xml)[:rgne].should be_nil
+      end
+      
+      it "returns the correct nokogiri node" do
+        @mapper.add_mapping(:node, :title)
+        node = @mapper.attributes_from_xml(@xml)[:title]
+        node.inner_text.should == "Black on Both Sides"
+      end
+      
+      it "can be combined with after_map" do
+        @mapper.add_mapping(:node, :title, :after_map => :inner_text)
+        @mapper.attributes_from_xml(@xml)[:title].should == "Black on Both Sides"
       end
     end
     
