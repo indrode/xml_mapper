@@ -1,0 +1,25 @@
+<album>
+  <title>Black on Both Sides</title>
+  <version_title>Extended Edition</version_title>
+  <released_in>1999</released_in>
+  <released_on>1999-10-12</released_on>
+  <country>de</country>
+  <allows_streaming>true</allows_streaming>
+  <artist>
+    <name>Mos Def</name>
+    <id>1212</id>
+  </artist>
+  <tracks>
+    <track>
+      <title>Fear Not of Man</title>
+      <number>1</number>
+      <disk>1</number>
+      <explicit_lyrics />
+    </track>
+    <track>
+      <title>Hip Hop</title>
+      <number>2</number>
+      <disk>1</number>
+    </track>
+  </tracks>
+</album>
