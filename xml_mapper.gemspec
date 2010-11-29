@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tobias Schwab"]
-  s.date = %q{2010-11-26}
-  s.description = %q{Just check out the examples}
+  s.date = %q{2010-11-29}
+  s.description = %q{Declarative XML to Ruby mapping}
   s.email = %q{tobias.schwab@dynport.de}
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -38,11 +38,11 @@ Gem::Specification.new do |s|
     "spec/xml_mapper_spec.rb",
     "xml_mapper.gemspec"
   ]
-  s.homepage = %q{http://github.com/tobstarr/xml_mapper}
+  s.homepage = %q{http://github.com/dynport/xml_mapper}
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
-  s.summary = %q{Declarative and clever XML to Ruby Mapping}
+  s.summary = %q{Declarative XML to Ruby mapping}
   s.test_files = [
     "spec/example_spec.rb",
     "spec/my_mapper.rb",

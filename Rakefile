@@ -13,10 +13,10 @@ require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "xml_mapper"
-  gem.homepage = "http://github.com/tobstarr/xml_mapper"
+  gem.homepage = "http://github.com/dynport/xml_mapper"
   gem.license = "MIT"
-  gem.summary = %Q{Declarative and clever XML to Ruby Mapping}
-  gem.description = %Q{Just check out the examples}
+  gem.summary = %Q{Declarative XML to Ruby mapping}
+  gem.description = %Q{Declarative XML to Ruby mapping}
   gem.email = "tobias.schwab@dynport.de"
   gem.authors = ["Tobias Schwab"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
