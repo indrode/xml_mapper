@@ -279,7 +279,7 @@ describe "XmlMapper" do
     describe "#string_to_boolean" do
       { 
         "true" => true, "false" => false, "y" => true, "TRUE" => true, "" => nil, "YES" => true, "yes" => true,
-        "n" => false
+        "n" => false, "1" => true, "0" => false
       }.each do |value, result|
         it "converts #{value.inspect} to #{result}" do
           @mapper.string_to_boolean(value).should == result

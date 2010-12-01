@@ -195,7 +195,9 @@ class XmlMapper
     "false" => false,
     "yes" => true,
     "y" => true,
-    "n" => false
+    "n" => false,
+    "1" => true,
+    "0" => false
   }
   
   def string_to_boolean(value)
