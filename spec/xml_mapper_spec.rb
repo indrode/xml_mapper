@@ -511,5 +511,28 @@ describe "XmlMapper" do
       end
     end
   
+  
+    describe "using node_name, inner_text and attribute" do
+      it "extracts the correct node_names for a many relationship" do
+        xml = %(
+          <Contributors>
+            <Performer>Sexy sushi</Performer>
+            <Composer>Sexi Sushi</Composer>
+            <Author>Sexi Sushi</Author>
+          </Contributors>
+        )
+        @clazz.many "Contributors/*" => :contributions do
+          node_name :contribution_type
+          inner_text :name
+        end
+        @clazz.attributes_from_xml(xml).should == {
+          :contributions => [
+            { :contribution_type => "Performer", :name => "Sexy sushi" },
+            { :contribution_type => "Composer", :name => "Sexi Sushi" },
+            { :contribution_type => "Author", :name => "Sexi Sushi" },
+          ]
+        }
+      end
+    end
   end
 end

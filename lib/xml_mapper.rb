@@ -22,6 +22,14 @@ class XmlMapper
       mapper.add_mapping(:exists, *args)
     end
     
+    def node_name(*args)
+      mapper.add_mapping(:node_name, *args)
+    end
+    
+    def inner_text(*args)
+      mapper.add_mapping(:inner_text, *args)
+    end
+    
     def node(*args)
       mapper.add_mapping(:node, *args)
     end
@@ -140,7 +148,18 @@ class XmlMapper
     elsif mapping[:type] == :exists
       !doc.at("//#{mapping[:xpath]}").nil?
     else
-      value = mapping[:type] == :node ? doc.at(mapping[:xpath]) : inner_text_for_xpath(doc, mapping[:xpath])
+      node = doc.at(mapping[:xpath])
+      value = 
+      case mapping[:type]
+        when :node_name
+          doc.nil? ? nil : doc.name
+        when :inner_text
+          doc.nil? ? nil : doc.inner_text
+        when :node
+          node
+        else
+          inner_text_for_node(node)
+      end
       apply_after_map_to_value(value, mapping)
     end
   end
@@ -155,10 +174,8 @@ class XmlMapper
     value
   end
   
-  def inner_text_for_xpath(doc, xpath)
-    if node = doc.at(xpath)
-      node.inner_text
-    end
+  def inner_text_for_node(node)
+    node.inner_text if node
   end
   
   MAPPINGS = {
