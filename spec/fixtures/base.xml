@@ -9,17 +9,27 @@
     <name>Mos Def</name>
     <id>1212</id>
   </artist>
+  <contributions>
+    <artist>Mos Def</artist>
+    <producer>DJ Premier</producer>
+  </contributions>
   <tracks>
-    <track>
+    <track code="1234">
       <title>Fear Not of Man</title>
       <number>1</number>
       <disk>1</number>
       <explicit_lyrics />
+      <not_streamable_in>
+        <country>de</country>
+      </not_streamable_in>
     </track>
-    <track>
+    <track code="2345">
       <title>Hip Hop</title>
       <number>2</number>
       <disk>1</number>
+      <not_streamable_in>
+        <country>at</country>
+      </not_streamable_in>
     </track>
   </tracks>
 </album>

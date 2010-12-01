@@ -13,11 +13,18 @@ class MyMapper < XmlMapper
     integer :id => :artist_id
   end
   
+  many "contributions/*" => :contributions do         # use the name of xml nodes for mappings
+    node_name :role                                   # map name of xml node to :role
+    inner_text :name                                  # map inner_text of xml node to :name
+  end
+  
   many "tracks/track" => :tracks do                   # maps xpath "tracks/track" to array with key :tracks
+    attribute :code => :isrc                          # map xml attribute "code" to :isrc
     text :title => :track_title
     integer :number => :track_number
     integer :disk => :disk_number
-    exists :explicit_lyrics                           # checks if a node with the xpath exists
+    exists :explicit_lyrics                            # checks if a node with the xpath exists
+    not_exists "not_streamable_in/country[text()='de']" => :allows_streaming
   end
   
   after_map do                                        # is called after attributes are extracted, self references the extracted attributes

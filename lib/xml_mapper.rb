@@ -80,7 +80,10 @@ class XmlMapper
   def add_mapping(type, *args)
     options = extract_options_from_args(args)
     if args.first.is_a?(Hash)
-      args.first.map { |xpath, key|  add_single_mapping(type, xpath, key, options) }
+      if after_map_method = args.first.delete(:after_map)
+        options.merge!(:after_map => after_map_method)
+      end
+      args.first.map { |xpath, key| add_single_mapping(type, xpath, key, options) }
     else
       args.map { |arg| add_single_mapping(type, arg, arg, options) }
     end
@@ -118,6 +121,7 @@ class XmlMapper
       xml_or_doc.map { |doc| attributes_from_xml(doc) } 
     else
       doc = xml_or_doc.is_a?(Nokogiri::XML::Node) ? xml_or_doc : Nokogiri::XML(xml_or_doc)
+      doc = doc.root if doc.respond_to?(:root)
       atts = self.mappings.inject(xml_path.nil? ? {} : { :xml_path => xml_path }) do |hash, mapping|
         hash.merge(mapping[:key] => value_from_doc_and_mapping(doc, mapping))
       end
@@ -129,35 +133,38 @@ class XmlMapper
   def value_from_doc_and_mapping(doc, mapping)
     if mapping[:type] == :many
       mapping[:options][:mapper].attributes_from_xml(doc.search(mapping[:xpath]).to_a)
-    elsif mapping[:type] == :exists
-      !doc.at("//#{mapping[:xpath]}").nil?
-    elsif mapping[:type] == :not_exists
-      doc.at("//#{mapping[:xpath]}").nil?
     else
-      node = mapping[:xpath].length == 0 ? doc : doc.at(mapping[:xpath])
-      value = 
-      case mapping[:type]
-        when :node_name
-          doc.nil? ? nil : doc.name
-        when :inner_text
-          doc.nil? ? nil : doc.inner_text
-        when :node
-          node
-        when :attribute
-          node.nil? ? nil : (node.respond_to?(:root) ? node.root : node)[mapping[:attribute]]
-        else
-          inner_text_for_node(node)
+      node = mapping[:xpath].length == 0 ? doc : doc.xpath(mapping[:xpath]).first
+      if mapping[:type] == :exists
+        !node.nil?
+      elsif mapping[:type] == :not_exists
+        node.nil?
+      else
+        value = 
+        case mapping[:type]
+          when :node_name
+            doc.nil? ? nil : doc.name
+          when :inner_text
+            doc.nil? ? nil : doc.inner_text
+          when :node
+            node
+          when :attribute
+            node.nil? ? nil : (node.respond_to?(:root) ? node.root : node)[mapping[:attribute]]
+          else
+            inner_text_for_node(node)
+        end
+        apply_after_map_to_value(value, mapping)
       end
-      apply_after_map_to_value(value, mapping)
     end
   end
   
   def apply_after_map_to_value(value, mapping)
-    after_map = TYPE_TO_AFTER_CODE[mapping[:type]]
-    after_map ||= mapping[:options][:after_map]
-    if value && after_map
-      value = value.send(after_map)  if value.respond_to?(after_map)
-      value = self.send(after_map, value) if self.respond_to?(after_map)
+    after_mappings = [TYPE_TO_AFTER_CODE[mapping[:type]], mapping[:options][:after_map]].compact
+    if value
+      after_mappings.each do |after_map|
+        value = value.send(after_map) if value.respond_to?(after_map)
+        value = self.send(after_map, value) if self.respond_to?(after_map)
+      end
     end
     value
   end

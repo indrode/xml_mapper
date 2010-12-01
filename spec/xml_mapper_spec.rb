@@ -75,6 +75,7 @@ describe "XmlMapper" do
     describe "#exists" do
       it "returns true when node exists" do
         xml = %(<album><title>Black on Both Sides</title><rights><country>DE</country></rights></album>)
+        root = Nokogiri::XML(xml).root
         @mapper.add_mapping(:exists, "rights[country='DE']" => :allows_streaming)
         @mapper.attributes_from_xml(xml).should == { :allows_streaming => true }
       end
@@ -152,10 +153,29 @@ describe "XmlMapper" do
       }
     end
     
+    it "allows multiple after_code mappings" do
+      class << @mapper
+        def double(value)
+          value * 2
+        end
+      end
+      @mapper.add_mapping(:integer, :track_number, :after_map => :double)
+      @mapper.attributes_from_xml(@xml).should == {
+        :track_number => 14
+      }
+    end
+    
+    it "allows defining a after_map mapping without ridicolous brackets" do
+      @mapper.add_mapping(:string, :track_number => :num, :after_map => :to_i)
+      @mapper.attributes_from_xml(@xml).should == {
+        :num => 7
+      }
+    end
+    
     it "uses mapper method defined in xml_mapper when value does not respond to :after_map and given as hash" do
       class << @mapper
         def double(value)
-          value.to_s * 2
+          value * 2
         end
       end
       # [{:type=>:text, :xpath=>"Graphic/ImgFormat", :key=>:image_format, :options=>{:after_map=>:double}}]
@@ -167,12 +187,27 @@ describe "XmlMapper" do
     
     it "takes a nokogiri node as argument" do
       @mapper.add_mapping(:text, :artist_name)
-      @mapper.attributes_from_xml(Nokogiri::XML(@xml)).should == {
+      @mapper.attributes_from_xml(Nokogiri::XML(@xml).root).should == {
+        :artist_name => "Mos Def"
+      }
+    end
+    
+    it "takes a nokogiri document as argument" do
+      @mapper.add_mapping(:text, :artist_name)
+      @mapper.attributes_from_xml(Nokogiri::XML(@xml).root).should == {
         :artist_name => "Mos Def"
       }
     end
     
     it "should also takes an array of nodes as argument" do
+      @mapper.add_mapping(:text, :artist_name)
+      @mapper.attributes_from_xml([Nokogiri::XML(@xml).root, Nokogiri::XML(@xml).root]).should == [
+        { :artist_name => "Mos Def" },
+        { :artist_name => "Mos Def" }
+      ]
+    end
+    
+    it "also takes an array of nokogiri documents as argument" do
       @mapper.add_mapping(:text, :artist_name)
       @mapper.attributes_from_xml([Nokogiri::XML(@xml), Nokogiri::XML(@xml)]).should == [
         { :artist_name => "Mos Def" },
@@ -383,6 +418,35 @@ describe "XmlMapper" do
       @clazz.attributes_from_xml(xml).should == { :allows_streaming => false }
     end
     
+    it "does keep scope for not_exists" do
+      xml = %(
+        <album>
+          <tracks>
+            <track>
+              <title>Track 1</title>
+              <forbidden_countries>
+                <country>DE</country>
+              </forbidden_countries>
+            </track>
+            <track>
+              <title>Track 2</title>
+              <forbidden_countries>
+                <country>AT</country>
+              </forbidden_countries>
+            </track>
+          </tracks>
+        </album>
+      )
+      @clazz.many "tracks/track" => :tracks do
+        text :title
+        not_exists "forbidden_countries/country[text()='DE']" => :allows_streaming
+      end
+      @clazz.attributes_from_xml(xml)[:tracks].should == [
+        { :title => "Track 1", :allows_streaming => false },
+        { :title => "Track 2", :allows_streaming => true },
+      ]
+    end
+    
     describe "#within" do
       it "adds the within xpath to all xpath mappings" do
         @clazz.within("artist") do
@@ -535,11 +599,13 @@ describe "XmlMapper" do
     describe "using node_name, inner_text and attribute" do
       it "extracts attributes for a many relationship when node_name and inner_text is used" do
         xml = %(
-          <Contributors>
-            <Performer>Sexy sushi</Performer>
-            <Composer>Sexi Sushi</Composer>
-            <Author>Sexi Sushi</Author>
-          </Contributors>
+          <album>
+            <Contributors>
+              <Performer>Sexy sushi</Performer>
+              <Composer>Sexi Sushi</Composer>
+              <Author>Sexi Sushi</Author>
+            </Contributors>
+          </album>
         )
         @clazz.many "Contributors/*" => :contributions do
           node_name :contribution_type
@@ -556,11 +622,13 @@ describe "XmlMapper" do
       
       it "extracts the correct attributes when attribute keyword is used in 'many'-mapping" do
         xml = %(
-          <tracks>
-            <track some_code="1234">
-              <title>Track 1</title>
-            </track>
-          </tracks>
+          <album>
+            <tracks>
+              <track some_code="1234">
+                <title>Track 1</title>
+              </track>
+            </tracks>
+          </album>
         )
         @clazz.many "tracks/track" => :tracks do
           attribute "some_code" => :isrc
