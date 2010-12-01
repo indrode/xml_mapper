@@ -5,33 +5,10 @@ class XmlMapper
   
   class << self
     attr_accessor :mapper
-    
-    def text(*args)
-      mapper.add_mapping(:text, *args)
-    end
-    
-    def integer(*args)
-      mapper.add_mapping(:integer, *args)
-    end
-    
-    def boolean(*args)
-      mapper.add_mapping(:boolean, *args)
-    end
-    
-    def exists(*args)
-      mapper.add_mapping(:exists, *args)
-    end
-    
-    def node_name(*args)
-      mapper.add_mapping(:node_name, *args)
-    end
-    
-    def inner_text(*args)
-      mapper.add_mapping(:inner_text, *args)
-    end
-    
-    def node(*args)
-      mapper.add_mapping(:node, *args)
+    [:text, :integer, :boolean, :exists, :node_name, :inner_text, :node].each do |method_name|
+      define_method(method_name) do |*args|
+        mapper.add_mapping(method_name, *args)
+      end
     end
     
     def attribute(*args)
