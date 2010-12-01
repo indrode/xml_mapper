@@ -5,14 +5,11 @@ class XmlMapper
   
   class << self
     attr_accessor :mapper
-    [:text, :integer, :boolean, :exists, :node_name, :inner_text, :node].each do |method_name|
+    
+    [:text, :integer, :boolean, :exists, :node_name, :inner_text, :node, :attribute].each do |method_name|
       define_method(method_name) do |*args|
         mapper.add_mapping(method_name, *args)
       end
-    end
-    
-    def attribute(*args)
-      mapper.add_mapping(:attribute, *args)
     end
     
     def within(xpath, &block)
