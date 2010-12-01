@@ -177,6 +177,7 @@ class XmlMapper
     "true" => true,
     "false" => false,
     "yes" => true,
+    "no" => false,
     "y" => true,
     "n" => false,
     "1" => true,
