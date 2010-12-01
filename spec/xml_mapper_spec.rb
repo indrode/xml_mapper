@@ -400,6 +400,31 @@ describe "XmlMapper" do
       }
     end
     
+    it "allows after map when used in submapper and method exists in mapper" do
+      xml = %(
+        <album>
+          <tracks>
+            <track>
+              <track_number>11</track_number>
+            </track>
+            <track>
+              <track_number>22</track_number>
+            </track>
+          </tracks>
+        </album>
+      )
+      @clazz.send(:define_method, "double") do |*args|
+        args.first * 2
+      end
+      
+      @clazz.many "tracks/track" => :tracks do
+        integer :track_number => :num, :after_map => :double
+      end
+      @clazz.attributes_from_xml(xml).should == {
+        :tracks => [ { :num => 22 }, { :num => 44 }]
+      }
+    end
+    
     it "accepts boolean as keyword" do
       @clazz.boolean(:allows_streaming)
       xml = %(<album><title>Test Title</title><allows_streaming>true</allows_streaming></album>)

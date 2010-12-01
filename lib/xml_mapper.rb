@@ -49,7 +49,7 @@ class XmlMapper
     
     def capture_submapping(&block)
       saved_mapper = self.mapper
-      self.mapper = XmlMapper.new
+      self.mapper = self.new
       self.instance_eval(&block)
       captured_mapper = self.mapper
       self.mapper = saved_mapper
