@@ -34,6 +34,10 @@ class XmlMapper
       mapper.add_mapping(:node, *args)
     end
     
+    def attribute(*args)
+      mapper.add_mapping(:attribute, *args)
+    end
+    
     def within(xpath, &block)
       self.mapper.within_xpath ||= []
       self.mapper.within_xpath << xpath
@@ -112,8 +116,14 @@ class XmlMapper
     self.after_map_block = block
   end
   
-  def add_single_mapping(type, xpath, key, options = {})
-    self.mappings << { :type => type, :xpath => add_with_to_xpath(xpath), :key => key, :options => options }
+  def add_single_mapping(type, xpath_or_attribute, key, options = {})
+    mappings = { :type => type, :key => key, :options => options }
+    xpath = type == :attribute ? nil : xpath_or_attribute
+    if type == :attribute
+      mappings[:attribute] = xpath_or_attribute.to_s
+    end
+    mappings[:xpath] = add_with_to_xpath(xpath)
+    self.mappings << mappings
   end
   
   def add_with_to_xpath(xpath)
@@ -148,7 +158,7 @@ class XmlMapper
     elsif mapping[:type] == :exists
       !doc.at("//#{mapping[:xpath]}").nil?
     else
-      node = doc.at(mapping[:xpath])
+      node = mapping[:xpath].length == 0 ? doc : doc.at(mapping[:xpath])
       value = 
       case mapping[:type]
         when :node_name
@@ -157,6 +167,8 @@ class XmlMapper
           doc.nil? ? nil : doc.inner_text
         when :node
           node
+        when :attribute
+          node.nil? ? nil : (node.respond_to?(:root) ? node.root : node)[mapping[:attribute]]
         else
           inner_text_for_node(node)
       end

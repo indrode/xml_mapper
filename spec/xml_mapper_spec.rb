@@ -29,6 +29,20 @@ describe "XmlMapper" do
       ]
     end
     
+    it "sets attribute for attribute mapping when attribute is mapped to same name" do
+      @mapper.add_mapping(:attribute, :first_name)
+      @mapper.mappings.should == [
+        { :type => :attribute, :attribute => "first_name", :key => :first_name, :options => {}, :xpath => "" }
+      ]
+    end
+    
+    it "sets attribute for attribute mapping when attribute is mapped to different name" do
+      @mapper.add_mapping(:attribute, :first_name => :firstname)
+      @mapper.mappings.should == [
+        { :type => :attribute, :attribute => "first_name", :key => :firstname, :options => {}, :xpath => "" }
+      ]
+    end
+    
     it "adds mappings when mapping given as hash" do
       @mapper.add_mapping(:text, :name => :first_name)
       @mapper.mappings.should == [{ :type => :text, :xpath => "name", :key => :first_name, :options => {} }]
@@ -513,7 +527,7 @@ describe "XmlMapper" do
   
   
     describe "using node_name, inner_text and attribute" do
-      it "extracts the correct node_names for a many relationship" do
+      it "extracts attributes for a many relationship when node_name and inner_text is used" do
         xml = %(
           <Contributors>
             <Performer>Sexy sushi</Performer>
@@ -532,6 +546,49 @@ describe "XmlMapper" do
             { :contribution_type => "Author", :name => "Sexi Sushi" },
           ]
         }
+      end
+      
+      it "extracts the correct attributes when attribute keyword is used in 'many'-mapping" do
+        xml = %(
+          <tracks>
+            <track some_code="1234">
+              <title>Track 1</title>
+            </track>
+          </tracks>
+        )
+        @clazz.many "tracks/track" => :tracks do
+          attribute "some_code" => :isrc
+          text :title
+        end
+        @clazz.attributes_from_xml(xml).should == {
+          :tracks => [
+            { :isrc => "1234", :title => "Track 1" }
+          ]
+        }
+      end
+      
+      it "extracts the correct attributes when attribute is used in within-mapping" do
+        xml = %(
+          <album>
+            <meta code="1234">
+              <title>Product Title</title>
+            </meta>
+          </></album>
+        )
+        @clazz.within "meta" do
+          attribute "code" => :upc
+        end
+        @clazz.attributes_from_xml(xml)[:upc].should == "1234"
+      end
+      
+      it "extracts the correct attributes when attribute is used in root mapping" do
+        xml = %(
+          <album code="1234">
+            <title>Product Title</title>
+          </></album>
+        )
+        @clazz.attribute :code => :upc
+        @clazz.attributes_from_xml(xml)[:upc].should == "1234"
       end
     end
   end
