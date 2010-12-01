@@ -6,7 +6,7 @@ class XmlMapper
   class << self
     attr_accessor :mapper
     
-    [:text, :integer, :boolean, :exists, :node_name, :inner_text, :node, :attribute].each do |method_name|
+    [:text, :integer, :boolean, :exists, :not_exists, :node_name, :inner_text, :node, :attribute].each do |method_name|
       define_method(method_name) do |*args|
         mapper.add_mapping(method_name, *args)
       end
@@ -131,6 +131,8 @@ class XmlMapper
       mapping[:options][:mapper].attributes_from_xml(doc.search(mapping[:xpath]).to_a)
     elsif mapping[:type] == :exists
       !doc.at("//#{mapping[:xpath]}").nil?
+    elsif mapping[:type] == :not_exists
+      doc.at("//#{mapping[:xpath]}").nil?
     else
       node = mapping[:xpath].length == 0 ? doc : doc.at(mapping[:xpath])
       value = 

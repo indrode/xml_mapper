@@ -377,6 +377,12 @@ describe "XmlMapper" do
       @clazz.attributes_from_xml(xml).should == { :allows_streaming => true }
     end
     
+    it "accepts not_exists as keyword" do
+      @clazz.not_exists("forbidden_countries/country[text()='DE']" => :allows_streaming)
+      xml = %(<album><title>Black on Both Sides</title><forbidden_countries><country>DE</country></rights></album>)
+      @clazz.attributes_from_xml(xml).should == { :allows_streaming => false }
+    end
+    
     describe "#within" do
       it "adds the within xpath to all xpath mappings" do
         @clazz.within("artist") do
