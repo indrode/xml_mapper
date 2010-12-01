@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{xml_mapper}
-  s.version = "0.3.3"
+  s.version = "0.4.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tobias Schwab"]
-  s.date = %q{2010-11-29}
+  s.date = %q{2010-12-01}
   s.description = %q{Declarative XML to Ruby mapping}
   s.email = %q{tobias.schwab@dynport.de}
   s.extra_rdoc_files = [
