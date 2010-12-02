@@ -16,6 +16,7 @@
   <tracks>
     <track code="1234">
       <title>Fear Not of Man</title>
+      <version_title></version_title>
       <number>1</number>
       <disk>1</number>
       <explicit_lyrics />
@@ -25,8 +26,11 @@
     </track>
     <track code="2345">
       <title>Hip Hop</title>
+      <version_title>Album Version</version_title>
       <number>2</number>
       <disk>1</number>
+      <performer>Mos Def</performer>
+      <producer>DJ Premier</producer>
       <not_streamable_in>
         <country>at</country>
       </not_streamable_in>

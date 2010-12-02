@@ -123,11 +123,23 @@ class XmlMapper
       doc = xml_or_doc.is_a?(Nokogiri::XML::Node) ? xml_or_doc : Nokogiri::XML(xml_or_doc)
       doc = doc.root if doc.respond_to?(:root)
       atts = self.mappings.inject(xml_path.nil? ? {} : { :xml_path => xml_path }) do |hash, mapping|
-        hash.merge(mapping[:key] => value_from_doc_and_mapping(doc, mapping))
+        if (value = value_from_doc_and_mapping(doc, mapping)) != :not_found
+          add_value_to_hash(hash, mapping[:key], value)
+        end
       end
       atts.instance_eval(&self.after_map_block) if self.after_map_block
       atts
     end
+  end
+  
+  def add_value_to_hash(hash, key_or_hash, value)
+    if key_or_hash.is_a?(Hash)
+      hash[key_or_hash.keys.first] ||= Hash.new
+      add_value_to_hash(hash[key_or_hash.keys.first], key_or_hash.values.first, value)
+    else
+      hash.merge!(key_or_hash => value)
+    end
+    hash
   end
   
   def value_from_doc_and_mapping(doc, mapping)
@@ -170,7 +182,9 @@ class XmlMapper
   end
   
   def inner_text_for_node(node)
-    node.inner_text if node
+    if node
+      node.inner_text.length == 0 ? nil : node.inner_text
+    end
   end
   
   MAPPINGS = {

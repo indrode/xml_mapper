@@ -22,6 +22,7 @@ Declarative mapping of XML files to ruby attributes
     <tracks>
       <track code="1234">
         <title>Fear Not of Man</title>
+        <version_title></version_title>
         <number>1</number>
         <disk>1</number>
         <explicit_lyrics />
@@ -31,8 +32,11 @@ Declarative mapping of XML files to ruby attributes
       </track>
       <track code="2345">
         <title>Hip Hop</title>
+        <version_title>Album Version</version_title>
         <number>2</number>
         <disk>1</number>
+        <performer>Mos Def</performer>
+        <producer>DJ Premier</producer>
         <not_streamable_in>
           <country>at</country>
         </not_streamable_in>
@@ -46,32 +50,36 @@ Declarative mapping of XML files to ruby attributes
   require "date"
 
   class MyMapper < XmlMapper
-    text :title, :version_title                         # 1:1 - maps xpaths title and version_title to attribute keys
-    integer :released_in                                # converts value to an integer
-    text :country, :after_map => :upcase                # calls after_map method on extracted value if value responds to the method
-    text :released_on, :after_map => :parse_date        # calls after_map method defined in Mapper class when value does not respond
-    boolean :allows_streaming                           # maps Y, y, yes, true => true, N, n, no, false => false
+    text :title, :version_title                             # 1:1 - maps xpaths title and version_title to attribute keys
+    integer :released_in                                    # converts value to an integer
+    text :country, :after_map => :upcase                    # calls after_map method on extracted value if value responds to the method
+    text :released_on, :after_map => :parse_date            # calls after_map method defined in Mapper class when value does not respond
+    boolean :allows_streaming                               # maps 1, Y, y, yes, true => true, 0, N, n, no, false => false
 
     within :artist do
-      text :name => :artist_name                        # adds mapping for xpath "artist/name"
+      text :name => :artist_name                            # adds mapping for xpath "artist/name"
       integer :id => :artist_id
     end
 
-    many "contributions/*" => :contributions do         # use the name of xml nodes for mappings
-      node_name :role                                   # map name of xml node to :role
-      inner_text :name                                  # map inner_text of xml node to :name
+    many "contributions/*" => :contributions do             # use the name of xml nodes for mappings
+      node_name :role                                       # map name of xml node to :role
+      inner_text :name                                      # map inner_text of xml node to :name
     end
 
-    many "tracks/track" => :tracks do                   # maps xpath "tracks/track" to array with key :tracks
-      attribute :code => :isrc                          # map xml attribute "code" to :isrc
+    many "tracks/track" => :tracks do                       # maps xpath "tracks/track" to array with key :tracks
+      attribute :code => :isrc                              # map xml attribute "code" to :isrc
       text :title => :track_title
+      text :version_title
       integer :number => :track_number
       integer :disk => :disk_number
-      exists :explicit_lyrics                            # checks if a node with the xpath exists
+      exists :explicit_lyrics                               # checks if a node with the xpath exists
       not_exists "not_streamable_in/country[text()='de']" => :allows_streaming
+
+      text :performer => { :contributions => :performer }   # assigns to content at xpath :performer to attributes[:contributions][:performer]
+      text :producer => { :contributions => :producer }     # assigns to content at xpath :performer to attributes[:contributions][:producer]
     end
 
-    after_map do                                        # is called after attributes are extracted, self references the extracted attributes
+    after_map do                                            # is called after attributes are extracted, self references the extracted attributes
       self[:tracks_count] = self[:tracks].length
     end
 
@@ -87,21 +95,20 @@ Declarative mapping of XML files to ruby attributes
 * MyMapper.attributes_from_xml_path(xml) (also sets :xml_path)
 
 == Output
-  { :title=>"Black on Both Sides", :allows_streaming=>true, :version_title=>"Extended Edition", 
-    :xml_path=>"/Users/tobias/Projects/xml_mapper/spec/fixtures/base.xml", :tracks_count=>2, :released_in=>1999, 
-    :released_on=>#<Date: 4902927/2,0,2299161>, :artist_name=>"Mos Def", 
-    :contributions=>[
-      {:name=>"Mos Def", :role=>"artist"}, {:name=>"DJ Premier", :role=>"producer"}
-    ], 
-    :artist_id=>1212, :country=>"DE", 
+  {
+    :title=>"Black on Both Sides", :allows_streaming=>true, :version_title=>"Extended Edition", 
     :tracks=>[
-      { :track_title=>"Fear Not of Man", :allows_streaming=>false, :track_number=>1, :disk_number=>1, 
-        :explicit_lyrics=>true, :isrc=>"1234"
+      { :track_title=>"Fear Not of Man", :allows_streaming=>false, :track_number=>1, :version_title=>nil, :disk_number=>1, 
+        :explicit_lyrics=>true, :contributions=>{:performer=>nil, :producer=>nil}, :isrc=>"1234"
       }, 
-      { :track_title=>"Hip Hop", :allows_streaming=>true, :track_number=>2, :disk_number=>1, 
-        :explicit_lyrics=>false, :isrc=>"2345"
+      { :track_title=>"Hip Hop", :allows_streaming=>true, :track_number=>2, :version_title=>"Album Version", :disk_number=>1, 
+        :explicit_lyrics=>false, :contributions=>{:performer=>"Mos Def", :producer=>"DJ Premier"}, :isrc=>"2345"
       }
-    ]
+    ], 
+    :tracks_count=>2, :released_in=>1999, :xml_path=>"/Users/tobias/Projects/xml_mapper/spec/fixtures/base.xml", 
+    :released_on=>#<Date: 4902927/2,0,2299161>, :artist_name=>"Mos Def", 
+    :contributions=>[ {:name=>"Mos Def", :role=>"artist"}, {:name=>"DJ Premier", :role=>"producer"} ]
+    :artist_id=>1212, :country=>"DE"
   }
 
 == Contributing to xml_mapper

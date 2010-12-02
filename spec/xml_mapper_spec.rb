@@ -72,6 +72,22 @@ describe "XmlMapper" do
       @mapper.attributes_from_xml(@xml).should == { :title => "Black on Both Sides", :artist_name => "Mos Def" }
     end
     
+    it "sets value to nil when value was empty string" do
+      @mapper.add_mapping(:text, :artist_name)
+      @mapper.attributes_from_xml("<album><artist_name></artist_name></album>").should == { :artist_name => nil }
+    end
+    
+    it "assigns found keys to nested attributes" do
+      @mapper.add_mapping(:text, :artist_name => { :meta => :artist_name })
+      @mapper.add_mapping(:text, :title => { :meta => :title })
+      @mapper.attributes_from_xml(@xml).should == {
+        :meta => {
+          :artist_name => "Mos Def",
+          :title => "Black on Both Sides"
+        }
+      }
+    end
+    
     describe "#exists" do
       it "returns true when node exists" do
         xml = %(<album><title>Black on Both Sides</title><rights><country>DE</country></rights></album>)

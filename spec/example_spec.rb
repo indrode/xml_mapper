@@ -22,8 +22,16 @@ describe "ExampleSpec" do
     end
     
     [
-      { :track_title => "Fear Not of Man", :track_number => 1, :disk_number => 1, :explicit_lyrics => true, :isrc => "1234" },
-      { :track_title => "Hip Hop", :track_number => 2, :disk_number => 1, :explicit_lyrics => false, :isrc => "2345" },
+      { 
+        :track_title => "Fear Not of Man", :track_number => 1, :disk_number => 1, :explicit_lyrics => true, :isrc => "1234",
+        :version_title => nil
+      },
+      { 
+        :track_title => "Hip Hop", :track_number => 2, :disk_number => 1, :explicit_lyrics => false, :isrc => "2345",
+        :version_title => "Album Version", :contributions => {
+          :producer => "DJ Premier", :performer => "Mos Def"
+        }
+      },
     ].each_with_index do |hash, offset|
       hash.each do |key, value|
         it "extracts #{value.inspect} for #{key} for track with offset #{offset}" do
