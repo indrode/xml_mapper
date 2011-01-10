@@ -1,17 +1,7 @@
 require "nokogiri"
+require "xml_mapper_hash"
 
 class XmlMapper
-  class XmlMapperHash < Hash
-    attr_accessor :xml_path, :node
-    
-    def self.from_path_and_node(new_path, new_node)
-      hash = self.new
-      hash.xml_path = new_path
-      hash.node = new_node
-      hash
-    end
-  end
-  
   attr_accessor :mappings, :after_map_block, :within_xpath
   
   class << self
