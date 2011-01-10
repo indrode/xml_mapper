@@ -79,8 +79,10 @@ Declarative mapping of XML files to ruby attributes
       text :producer => { :contributions => :producer }     # assigns to content at xpath :performer to attributes[:contributions][:producer]
     end
 
-    after_map do                                            # is called after attributes are extracted, self references the extracted attributes
+    after_map do                                                    # is called after attributes are extracted, self references the extracted attributes
       self[:tracks_count] = self[:tracks].length
+      self[:xml_path] = self.xml_path                               # lets you access the xml_path when called with attributes_from_xml_path
+      self[:other_tracks_count] = self.node.search("track").count   # lets you access the current xml node (in this case the whole doc)
     end
 
     # to be used for after_map callbacks
@@ -92,7 +94,7 @@ Declarative mapping of XML files to ruby attributes
 == How to call
 
 * MyMapper.attributes_from_xml(xml)
-* MyMapper.attributes_from_xml_path(xml) (also sets :xml_path)
+* MyMapper.attributes_from_xml_path(xml)
 
 == Output
   {
@@ -105,7 +107,7 @@ Declarative mapping of XML files to ruby attributes
         :explicit_lyrics=>false, :contributions=>{:performer=>"Mos Def", :producer=>"DJ Premier"}, :isrc=>"2345"
       }
     ], 
-    :tracks_count=>2, :released_in=>1999, :xml_path=>"/Users/tobias/Projects/xml_mapper/spec/fixtures/base.xml", 
+    :tracks_count=>2, :released_in=>1999, 
     :released_on=>#<Date: 4902927/2,0,2299161>, :artist_name=>"Mos Def", 
     :contributions=>[ {:name=>"Mos Def", :role=>"artist"}, {:name=>"DJ Premier", :role=>"producer"} ]
     :artist_id=>1212, :country=>"DE"
