@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{xml_mapper}
-  s.version = "0.4.2"
+  s.version = "0.5.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Tobias Schwab"]
-  s.date = %q{2010-12-02}
+  s.date = %q{2011-01-10}
   s.description = %q{Declarative XML to Ruby mapping}
   s.email = %q{tobias.schwab@dynport.de}
   s.extra_rdoc_files = [
@@ -31,10 +31,12 @@ Gem::Specification.new do |s|
     "features/support/env.rb",
     "features/xml_mapper.feature",
     "lib/xml_mapper.rb",
+    "lib/xml_mapper_hash.rb",
     "spec/example_spec.rb",
     "spec/fixtures/base.xml",
     "spec/my_mapper.rb",
     "spec/spec_helper.rb",
+    "spec/xml_mapper_hash_spec.rb",
     "spec/xml_mapper_spec.rb",
     "xml_mapper.gemspec"
   ]
@@ -47,6 +49,7 @@ Gem::Specification.new do |s|
     "spec/example_spec.rb",
     "spec/my_mapper.rb",
     "spec/spec_helper.rb",
+    "spec/xml_mapper_hash_spec.rb",
     "spec/xml_mapper_spec.rb"
   ]
 
