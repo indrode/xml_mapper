@@ -1,6 +1,17 @@
 require "nokogiri"
 
 class XmlMapper
+  class XmlMapperHash < Hash
+    attr_accessor :xml_path, :node
+    
+    def self.from_path_and_node(new_path, new_node)
+      hash = self.new
+      hash.xml_path = new_path
+      hash.node = new_node
+      hash
+    end
+  end
+  
   attr_accessor :mappings, :after_map_block, :within_xpath
   
   class << self
@@ -118,12 +129,12 @@ class XmlMapper
   
   def attributes_from_xml(xml_or_doc, xml_path = nil)
     if xml_or_doc.is_a?(Array)
-      xml_or_doc.map { |doc| attributes_from_xml(doc) } 
+      xml_or_doc.map { |doc| attributes_from_xml(doc, xml_path) } 
     else
       doc = xml_or_doc.is_a?(Nokogiri::XML::Node) ? xml_or_doc : Nokogiri::XML(xml_or_doc)
       doc = doc.root if doc.respond_to?(:root)
-      atts = self.mappings.inject(xml_path.nil? ? {} : { :xml_path => xml_path }) do |hash, mapping|
-        if (value = value_from_doc_and_mapping(doc, mapping)) != :not_found
+      atts = self.mappings.inject(XmlMapperHash.from_path_and_node(xml_path, doc)) do |hash, mapping|
+        if (value = value_from_doc_and_mapping(doc, mapping, xml_path)) != :not_found
           add_value_to_hash(hash, mapping[:key], value)
         end
       end
@@ -142,9 +153,9 @@ class XmlMapper
     hash
   end
   
-  def value_from_doc_and_mapping(doc, mapping)
+  def value_from_doc_and_mapping(doc, mapping, xml_path = nil)
     if mapping[:type] == :many
-      mapping[:options][:mapper].attributes_from_xml(doc.search(mapping[:xpath]).to_a)
+      mapping[:options][:mapper].attributes_from_xml(doc.search(mapping[:xpath]).to_a, xml_path)
     else
       node = mapping[:xpath].length == 0 ? doc : doc.xpath(mapping[:xpath]).first
       if mapping[:type] == :exists

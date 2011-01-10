@@ -1,6 +1,16 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "XmlMapper" do
+  def create_class(base_class = "XmlMapper")
+    class_name = "TestMapping#{Time.now.to_f.to_s.gsub(".", "")}"
+    str = %(
+      class #{class_name} < #{base_class}
+      end
+    )
+    eval(str)
+    eval(class_name)
+  end
+  
   before(:each) do
     @mapper = XmlMapper.new
   end
@@ -278,12 +288,6 @@ describe "XmlMapper" do
       File.stub(:read).and_return @xml
     end
     
-    it "sets the xml_path" do
-      @mapper.attributes_from_xml_path("/some/path.xml").should == { 
-        :title => "Black on Both Sides", :xml_path => "/some/path.xml" 
-      }
-    end
-    
     it "calls File.read with correct parameters" do
       File.should_receive(:read).with("/some/path.xml").and_return @xml
       @mapper.attributes_from_xml_path("/some/path.xml")
@@ -291,7 +295,7 @@ describe "XmlMapper" do
     
     it "allows using the xml_path in after_map block" do
       @mapper.after_map do
-        self[:new_xml_path] = self[:xml_path]
+        self[:new_xml_path] = self.xml_path
       end
       @mapper.attributes_from_xml_path("/some/path.xml")[:new_xml_path].should == "/some/path.xml"
     end
@@ -324,6 +328,68 @@ describe "XmlMapper" do
         :upc => "1234"
       }
     end
+    
+    describe "using xml_path and node" do
+      before(:each) do
+        xml = %(
+          <album>
+            <tracks>
+              <track><title>First Track</title></track>
+              <track><title>Second Track Track</title></track>
+            </tracks>
+          </album>
+        )
+        File.stub(:read).and_return xml
+      end
+      
+      it "allows accessing xml_path in after_map block" do
+        @mapper.after_map do
+          self[:new_path] = self.xml_path
+        end
+        @mapper.attributes_from_xml_path("/some/other/path.xml").should == { :new_path => "/some/other/path.xml" }
+      end
+      
+      it "allows using node in after_map block" do
+        @mapper.after_map do
+          self[:tracks_count] = self.node.search("tracks/track").count
+        end
+        @mapper.attributes_from_xml_path("/some/other/path.xml").should == { :tracks_count => 2 }
+      end
+      
+      it "allows using xml_path in subnodes" do
+        clazz = create_class
+        clazz.many "tracks/track" => :tracks do
+          after_map do
+            self[:new_path] = self.xml_path
+          end
+        end
+        clazz.attributes_from_xml_path("/some/other/path.xml").should == { :tracks => 
+          [ 
+            { :new_path => "/some/other/path.xml" }, 
+            { :new_path => "/some/other/path.xml" }
+          ] 
+        }
+      end
+      
+      it "allows using node in subnodes" do
+        clazz = create_class
+        clazz.many "tracks/track" => :tracks do
+          after_map do
+            self[:title_count] = self.node.search("title").count
+          end
+        end
+        clazz.after_map do
+          self[:title_count] = self.node.search("title").count
+        end
+        
+        clazz.attributes_from_xml_path("/some/other/path.xml").should == { :title_count => 2,
+          :tracks => [ 
+              { :title_count => 1 }, 
+              { :title_count => 1 }
+          ]
+        }
+      end
+    end
   end
   
   describe "converting strings" do
@@ -340,16 +406,6 @@ describe "XmlMapper" do
   end
   
   describe "defining a DSL" do
-    def create_class(base_class = "XmlMapper")
-      class_name = "TestMapping#{Time.now.to_f.to_s.gsub(".", "")}"
-      str = %(
-        class #{class_name} < #{base_class}
-        end
-      )
-      eval(str)
-      eval(class_name)
-    end
-    
     before(:each) do
       # so that we have a new class in each spec
       @clazz = create_class
@@ -378,8 +434,7 @@ describe "XmlMapper" do
       File.stub(:read).and_return %(<album><title>Test Title</title></album>)
       @clazz.text(:title)
       @clazz.attributes_from_xml_path("/some/path.xml").should == {
-        :title => "Test Title",
-        :xml_path => "/some/path.xml"
+        :title => "Test Title"
       }
     end
     
@@ -574,8 +629,7 @@ describe "XmlMapper" do
         File.stub!(:read).and_return xml
         subclazz.attributes_from_xml_path("/some_path/album.xml").should == {
           :artist_name => "Mos Def",
-          :title => "Black on Both Sides",
-          :xml_path => "/some_path/album.xml"
+          :title => "Black on Both Sides"
         }
       end
     end
