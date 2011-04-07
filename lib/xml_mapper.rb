@@ -68,6 +68,10 @@ class XmlMapper
     def mapper
       @mapper ||= self.new
     end
+    
+    def include_mapper(clazz)
+      self.mapper.mappings += clazz.mapper.mappings
+    end
   end
   
   def initialize

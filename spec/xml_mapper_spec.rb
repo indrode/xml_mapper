@@ -761,4 +761,59 @@ describe "XmlMapper" do
       end
     end
   end
+  
+  describe "#include_mapper" do
+    before(:each) do
+      @clazz = create_class
+    end
+    
+    class Submapper < XmlMapper
+      text :title, :released_on
+    end
+    
+    it "is callable" do
+      @clazz.include_mapper(Submapper)
+    end
+    
+    it "works" do
+      xml = %(
+        <album>
+          <artist_name>Mos Def</artist_name>
+          <title>Black on Both Sides</title>
+          <released_on>2011-03-01</released_on>
+        </album>
+      )
+      @clazz.text "artist_name" => :artist_name
+      @clazz.include_mapper(Submapper)
+      @clazz.attributes_from_xml(xml).should == { :artist_name => "Mos Def", :title => "Black on Both Sides", :released_on => "2011-03-01" }
+    end
+    
+    it "works for many keyword" do
+      xml = %(
+        <album>
+          <title>Album Title</title>
+          <released_on>1999-01-01</released_on>
+          <tracks>
+            <track>
+              <title>Track 1</title>
+              <released_on>1999-02-01</released_on>
+            </track>
+            <track>
+              <title>Track 2</title>
+              <released_on>1999-03-01</released_on>
+            </track>
+          </tracks>
+        </album>
+      )
+      @clazz.many "tracks/track" => :tracks do
+        include_mapper Submapper
+      end
+      @clazz.attributes_from_xml(xml).should ==  {
+        :tracks=>[
+          {
+            :released_on=>"1999-02-01", :title=>"Track 1"}, {:released_on=>"1999-03-01", :title=>"Track 2"}
+        ]
+      }
+    end
+  end
 end
