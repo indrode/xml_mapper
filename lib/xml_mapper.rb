@@ -1,6 +1,7 @@
 require "nokogiri"
 require "xml_mapper_hash"
 require "parsedate"
+require "date"
 
 class XmlMapper
   attr_accessor :mappings, :after_map_block, :within_xpath
@@ -214,5 +215,9 @@ class XmlMapper
     string = string.to_s.gsub(/PT(\d+M.*)/,"PT0H\\1") # insert 0H into PT3M12S, for example: PT0H3M12S
     year, month, day, hour, minute, second = ParseDate.parsedate(string)
     return (hour.to_i * 1 * 3600 + minute.to_i * 1 * 60 + second.to_i).to_i
+  end
+  
+  def parse_date(text)
+    text.to_s.strip.length > 0 ? Date.parse(text.to_s.strip) : nil
   end
 end

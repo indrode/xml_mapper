@@ -33,6 +33,20 @@ describe "XmlMapper" do
     end
   end
   
+  describe "#parse_date" do
+    it "returns nil when text is blank" do
+      XmlMapper.new.parse_date(" ").should be_nil
+    end
+
+    it "returns nil when text is nil" do
+      XmlMapper.new.parse_date(nil).should be_nil
+    end
+
+    it "parses dates correctly" do
+      XmlMapper.new.parse_date("2010-09-01").should == Date.new(2010, 9, 1)
+    end
+  end
+  
   describe "#add_mapping" do
     it "adds the correct mappings when only one symbol given" do
       @mapper.add_mapping(:text, :title)
