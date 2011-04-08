@@ -1,5 +1,6 @@
 require "nokogiri"
 require "xml_mapper_hash"
+require "parsedate"
 
 class XmlMapper
   attr_accessor :mappings, :after_map_block, :within_xpath
@@ -205,5 +206,13 @@ class XmlMapper
   
   def string_to_boolean(value)
     MAPPINGS[value.to_s.downcase]
+  end
+  
+  def parse_duration(string)
+    return string.to_i if string.match(/^\d+$/)
+    string = "00:#{string}" if string.match(/^(\d+):(\d+)$/)
+    string = string.to_s.gsub(/PT(\d+M.*)/,"PT0H\\1") # insert 0H into PT3M12S, for example: PT0H3M12S
+    year, month, day, hour, minute, second = ParseDate.parsedate(string)
+    return (hour.to_i * 1 * 3600 + minute.to_i * 1 * 60 + second.to_i).to_i
   end
 end

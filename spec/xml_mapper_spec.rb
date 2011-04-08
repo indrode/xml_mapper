@@ -15,6 +15,24 @@ describe "XmlMapper" do
     @mapper = XmlMapper.new
   end
   
+  describe "#parse_duration" do
+    it "convert human readable strings to lenghs" do
+      XmlMapper.new.parse_duration("00:01").should == 1
+      XmlMapper.new.parse_duration("00:00:01").should == 1
+      XmlMapper.new.parse_duration("00:01:01").should == 61
+      XmlMapper.new.parse_duration("01:01:01").should == 3661
+    end
+
+    it "should convert iso string to lengths" do
+      XmlMapper.new.parse_duration("PT0H5M54S").should == 354
+      XmlMapper.new.parse_duration("PT3M12S").should == 192
+    end
+
+    it "should not convert integer values" do
+      XmlMapper.new.parse_duration("60").should == 60
+    end
+  end
+  
   describe "#add_mapping" do
     it "adds the correct mappings when only one symbol given" do
       @mapper.add_mapping(:text, :title)
