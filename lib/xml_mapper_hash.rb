@@ -20,5 +20,18 @@ class XmlMapper
     def hashes_from_into_keys(into_keys)
       [into_keys].flatten.map { |key| self[key] }.flatten.compact
     end
+    
+    def strip_attributes!(hash)
+      hash.each do |key, value|
+        if value.is_a?(Hash)
+          strip_attributes!(value)
+        elsif value.is_a?(Array)
+          value.map { |array_value| strip_attributes!(array_value) }
+        elsif value.respond_to?(:strip!)
+          value.strip!
+          hash[key] = nil if value.length == 0
+        end
+      end
+    end
   end
 end

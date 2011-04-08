@@ -69,4 +69,36 @@ describe XmlMapper::XmlMapperHash do
       }
     end
   end
+  
+  describe "#strip_attributes!" do
+    it "strips strings in simple hashes" do
+      hash = XmlMapper::XmlMapperHash.new.merge(:artist_name => " Test ")
+      hash.strip_attributes!(hash)
+      hash.should == { :artist_name => "Test" }
+    end
+    
+    it "sets blank attributes to nil" do
+      hash = XmlMapper::XmlMapperHash.new.merge(:artist_name => "  ")
+      hash.strip_attributes!(hash)
+      hash.should == { :artist_name => nil }
+    end
+
+    it "does not change nil values" do
+      hash = XmlMapper::XmlMapperHash.new.merge(:artist_name => nil)
+      hash.strip_attributes!(hash)
+      hash.should == { :artist_name => nil }
+    end
+
+    it "does strip nested hashes" do
+      hash = XmlMapper::XmlMapperHash.new.merge(:meta => { :title => " title " })
+      hash.strip_attributes!(hash)
+      hash.should == { :meta => { :title => "title" } }
+    end
+
+    it "does strip values in nested arrays" do
+      hash = XmlMapper::XmlMapperHash.new.merge(:tracks => [ { :title => " title 1 " }, { :title => " title 2 " } ])
+      hash.strip_attributes!(hash)
+      hash.should == { :tracks => [ { :title => "title 1" }, { :title => "title 2" } ] }
+    end
+  end
 end
