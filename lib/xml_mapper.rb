@@ -127,7 +127,7 @@ class XmlMapper
     if xml_or_doc.is_a?(Array)
       xml_or_doc.map { |doc| attributes_from_xml(doc, xml_path) } 
     else
-      doc = xml_or_doc.is_a?(Nokogiri::XML::Node) ? xml_or_doc : Nokogiri::XML(xml_or_doc)
+      doc = xml_or_doc.is_a?(Nokogiri::XML::Node) ? xml_or_doc : Nokogiri::XML(xml_or_doc.gsub(/xmlns=.*?.xsd[\"\']/, "")) # get rid of xml namespaces, quick and dirty
       doc = doc.root if doc.respond_to?(:root)
       atts = self.mappings.inject(XmlMapperHash.from_path_and_node(xml_path, doc)) do |hash, mapping|
         if (value = value_from_doc_and_mapping(doc, mapping, xml_path)) != :not_found

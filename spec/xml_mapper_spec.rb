@@ -848,4 +848,21 @@ describe "XmlMapper" do
       }
     end
   end
+
+  it "does not care about xmlns" do
+    xml = %(
+      <submission xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://schemas.ingrooves.com/INgrooves/INgrooves_2_0.xsd http://schemas.ingrooves.com/INgrooves/INgrooves_2_0.xsd" schema_version="1" schema_revision="0" xmlns="http://schemas.ingrooves.com/INgrooves/INgrooves_2_0.xsd">
+        <album>
+          <title>Black on Both Sides</title>
+        </album>
+      </submission>
+    )
+    class Mapper < XmlMapper
+      within "album" do
+        text "title" => :title
+      end
+    end
+    
+    Mapper.attributes_from_xml(xml).should == { :title => "Black on Both Sides" }
+  end
 end
