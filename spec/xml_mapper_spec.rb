@@ -16,20 +16,13 @@ describe "XmlMapper" do
   end
   
   describe "#parse_duration" do
-    it "convert human readable strings to lenghs" do
-      XmlMapper.new.parse_duration("00:01").should == 1
-      XmlMapper.new.parse_duration("00:00:01").should == 1
-      XmlMapper.new.parse_duration("00:01:01").should == 61
-      XmlMapper.new.parse_duration("01:01:01").should == 3661
-    end
-
-    it "should convert iso string to lengths" do
-      XmlMapper.new.parse_duration("PT0H5M54S").should == 354
-      XmlMapper.new.parse_duration("PT3M12S").should == 192
-    end
-
-    it "should not convert integer values" do
-      XmlMapper.new.parse_duration("60").should == 60
+    {
+      "60" => 60, "no_duration" => nil, "PT0H5M54S" => 354, "PT3M12S" => 192, "PT64M54S" => 3894,
+      "00:01" => 1, "00:00:01" => 1, "00:01:01" => 61, "01:01:01" => 3661
+    }.each do |duration_string, value|
+      it "converts #{duration_string.inspect} to #{value}" do
+        XmlMapper.new.parse_duration(duration_string).should == value
+      end
     end
   end
   
@@ -44,6 +37,10 @@ describe "XmlMapper" do
 
     it "parses dates correctly" do
       XmlMapper.new.parse_date("2010-09-01").should == Date.new(2010, 9, 1)
+    end
+    
+    it "returns nil when unable to parse date" do
+      XmlMapper.new.parse_date("something_wrong").should be_nil
     end
   end
   

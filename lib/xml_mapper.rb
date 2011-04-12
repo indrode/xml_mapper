@@ -212,12 +212,16 @@ class XmlMapper
   def parse_duration(string)
     return string.to_i if string.match(/^\d+$/)
     string = "00:#{string}" if string.match(/^(\d+):(\d+)$/)
-    string = string.to_s.gsub(/PT(\d+M.*)/,"PT0H\\1") # insert 0H into PT3M12S, for example: PT0H3M12S
-    time = Time.parse(string)
-    return (time.hour.to_i * 1 * 3600 + time.min.to_i * 1 * 60 + time.sec.to_i).to_i
+    string = string.to_s.gsub(/PT(\d+M.*)/,"PT0H\\1")         # insert 0H into PT3M12S, for example: PT0H3M12S
+    if string.match(/^PT(\d+)H(\d+)M(\d+)S$/) || string.match(/^(\d+):(\d+):(\d+)$/)
+      $1.to_i * 3600 + $2.to_i * 60 + $3.to_i
+    else
+      nil
+    end
   end
   
   def parse_date(text)
     text.to_s.strip.length > 0 ? Date.parse(text.to_s.strip) : nil
+  rescue
   end
 end
