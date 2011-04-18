@@ -46,8 +46,12 @@ class XmlMapper
       end
     end
     
-    def attributes_from_xml_path(path)
-      attributes_from_superclass(path, :attributes_from_xml_path).merge(mapper.attributes_from_xml_path(path))
+    def attributes_from_xml_path(path, xml = nil)
+      if xml
+        attributes_from_superclass(xml, :attributes_from_xml).merge(mapper.attributes_from_xml(xml, path))
+      else
+        attributes_from_superclass(path, :attributes_from_xml_path).merge(mapper.attributes_from_xml_path(path))
+      end
     end
     
     def capture_submapping(&block)

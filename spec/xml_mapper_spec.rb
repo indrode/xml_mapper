@@ -467,6 +467,17 @@ describe "XmlMapper" do
       }
     end
     
+    it "allows providing of custom xml on second parameter of attributes_from_xml_path" do
+      data = %(<album><title>Static Test</title></album>)
+      @clazz.text(:title)
+      @clazz.after_map do
+        self[:some_path] = xml_path
+      end
+      @clazz.attributes_from_xml_path("/some/path.xml", data).should == {
+        :title => "Static Test", :some_path => "/some/path.xml"
+      }
+    end
+    
     it "allows defining a after_map block" do
       @clazz.after_map do
         self[:upc] = "1234"
