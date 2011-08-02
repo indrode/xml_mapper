@@ -873,4 +873,19 @@ describe "XmlMapper" do
     
     Mapper.attributes_from_xml(xml).should == { :title => "Black on Both Sides" }
   end
+  
+  it "allows forcing xpath style selectors" do
+    mapper = create_class.new
+    mapper.add_mapping(:many, { "tracks/track" => :tracks }, :mapper => XmlMapper.new)
+    mapper.selector_mode = :xpath
+    node = mock("nokogiri node")
+    node.should_receive(:send).with(:xpath, "tracks/track")
+    Nokogiri.stub(:XML).and_return {node}
+    xml = %(
+          <album>
+            <title>Black on Both Sides</title>
+          </album>
+    )
+    mapper.attributes_from_xml(xml)
+  end
 end

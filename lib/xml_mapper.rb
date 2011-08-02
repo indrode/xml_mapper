@@ -4,7 +4,7 @@ require "date"
 require "time"
 
 class XmlMapper
-  attr_accessor :mappings, :after_map_block, :within_xpath
+  attr_accessor :mappings, :after_map_block, :within_xpath, :selector_mode
   
   class << self
     attr_accessor :mapper
@@ -75,6 +75,10 @@ class XmlMapper
       @mapper ||= self.new
     end
     
+    def selector_mode(style)
+      self.mapper.selector_mode = style
+    end
+
     def include_mapper(clazz)
       self.mapper.mappings += clazz.mapper.mappings
     end
@@ -82,6 +86,7 @@ class XmlMapper
   
   def initialize
     self.mappings = []
+    self.selector_mode = :search
   end
   
   def extract_options_from_args(args)
@@ -155,7 +160,7 @@ class XmlMapper
   
   def value_from_doc_and_mapping(doc, mapping, xml_path = nil)
     if mapping[:type] == :many
-      mapping[:options][:mapper].attributes_from_xml(doc.search(mapping[:xpath]).to_a, xml_path)
+      mapping[:options][:mapper].attributes_from_xml(doc.send(self.selector_mode, mapping[:xpath]).to_a, xml_path)
     else
       node = mapping[:xpath].length == 0 ? doc : doc.xpath(mapping[:xpath]).first
       if mapping[:type] == :exists
