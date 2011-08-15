@@ -874,6 +874,23 @@ describe "XmlMapper" do
     Mapper.attributes_from_xml(xml).should == { :title => "Black on Both Sides" }
   end
   
+  it "also removes xmlsns not ending with xsd" do
+    xml = %(
+      <product xmlns="http://www.fuck.com/you/umg">
+        <album>
+          <title>Some Title</title>
+        </album>
+      </product>
+    )
+    class Mapper < XmlMapper
+      within "album" do
+        text "title" => :title
+      end
+    end
+    
+    Mapper.attributes_from_xml(xml).should == { :title => "Some Title" }
+  end
+  
   it "allows forcing xpath style selectors" do
     mapper = create_class.new
     mapper.add_mapping(:many, { "tracks/track" => :tracks }, :mapper => XmlMapper.new)
