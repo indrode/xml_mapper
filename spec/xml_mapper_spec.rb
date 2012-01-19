@@ -18,7 +18,7 @@ describe "XmlMapper" do
   describe "#parse_duration" do
     {
       "60" => 60, "no_duration" => nil, "PT0H5M54S" => 354, "PT3M12S" => 192, "PT64M54S" => 3894,
-      "00:01" => 1, "00:00:01" => 1, "00:01:01" => 61, "01:01:01" => 3661
+      "00:01" => 1, "00:00:01" => 1, "00:01:01" => 61, "01:01:01" => 3661, "1:12:42" => 4362
     }.each do |duration_string, value|
       it "converts #{duration_string.inspect} to #{value}" do
         XmlMapper.new.parse_duration(duration_string).should == value
